@@ -4,11 +4,20 @@ import {
   Wallet, PiggyBank, TrendingDown, Calendar, Plus,
   AlertTriangle, Check, RefreshCw, History
 } from 'lucide-react'
-import { useBudgetStore } from '../store/useBudgetStore'
+import useBudgetStore from '../store/useBudgetStore'
 import { APP_CONFIG } from '../config/app'
 
 export default function Dashboard({ appName }) {
-  const { budgetData, logExpense, resetBudget, totalRemaining, totalSpent, remainingDays } = useBudgetStore()
+  const budgetData = useBudgetStore(state => state.budgetData)
+  const logExpense = useBudgetStore(state => state.logExpense)
+  const resetBudget = useBudgetStore(state => state.resetBudget)
+  const getTotalRemaining = useBudgetStore(state => state.getTotalRemaining)
+  const getTotalSpent = useBudgetStore(state => state.getTotalSpent)
+  const getRemainingDays = useBudgetStore(state => state.getRemainingDays)
+  
+  const totalRemaining = getTotalRemaining()
+  const totalSpent = getTotalSpent()
+  const remainingDays = getRemainingDays()
   const [showInput, setShowInput] = useState(true)
 
   if (!budgetData) return null

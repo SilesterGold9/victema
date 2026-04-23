@@ -1,62 +1,65 @@
-import { useState, useCallback, useEffect } from 'react'
+import { create } from 'zustand'
 import { APP_CONFIG } from '../config/app'
 
-const STORAGE_KEY = APP_CONFIG.storageKeys.budgetData
+const useBudgetStore = create((set, get) => ({
+  budgetData: null,
+  hydrated: false,
 
-export function useBudgetStore() {
-  const [budgetData, setBudgetData] = useState(() => {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    return stored ? JSON.parse(stored) : null
-  })
-  const [isLoaded, setIsLoaded] = useState(true)
-
-  useEffect(() => {
-    if (budgetData) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(budgetData))
+  hydrate: () => {
+    const stored = localStorage.getItem(APP_CONFIG.storageKeys.budgetData)
+    if (stored) {
+      set({ budgetData: JSON.parse(stored), hydrated: true })
+    } else {
+      set({ hydrated: true })
     }
-  }, [budgetData])
+  },
 
-  const initializeBudget = useCallback((data) => {
+  save: () => {
+    const { budgetData } = get()
+    if (budgetData) {
+      localStorage.setItem(APP_CONFIG.storageKeys.budgetData, JSON.stringify(budgetData))
+    }
+  },
+
+  initializeBudget: (data) => {
     const cycleStart = new Date()
     const cycleEnd = new Date(cycleStart.getFullYear(), cycleStart.getMonth() + 1, 0)
     
     const categories = {}
     data.categories.forEach(cat => {
-      categories[cat.id] = {
-        ...cat,
-        spent: 0
-      }
+      categories[cat.id] = { ...cat, spent: 0 }
     })
 
     const savings = {}
     data.savings.forEach(sav => {
-      savings[sav.id] = {
-        ...sav,
-        funded: 0
+      savings[sav.id] = { ...sav, funded: 0 }
+    })
+
+    set({
+      budgetData: {
+        income: data.income,
+        cycleStart: cycleStart.toISOString(),
+        cycleEnd: cycleEnd.toISOString(),
+        categories,
+        savings,
+        transactions: []
       }
     })
+    get().save()
+  },
 
-    setBudgetData({
-      income: data.income,
-      cycleStart: cycleStart.toISOString(),
-      cycleEnd: cycleEnd.toISOString(),
-      categories,
-      savings,
-      transactions: []
-    })
-  }, [])
+  logExpense: (amount, categoryId) => {
+    const { budgetData } = get()
+    if (!budgetData) return
 
-  const logExpense = useCallback((amount, categoryId) => {
-    setBudgetData(prev => {
-      if (!prev) return prev
-      
-      const updated = {
-        ...prev,
+    set({
+      budgetData: {
+        ...budgetData,
         categories: {
-          ...prev.categories,
+          ...budgetData.categories,
           [categoryId]: {
-            ...prev.categories[categoryId],
-            spent: prev.categories[categoryId].spent + amount
+            ...budgetData.categories[categoryId],
+            spent: budgetData.categories[categoryId].spent + amount
           }
         },
         transactions: [
@@ -66,57 +69,57 @@ export function useBudgetStore() {
             categoryId,
             amount
           },
-          ...prev.transactions
+          ...budgetData.transactions
         ]
       }
-      return updated
     })
-  }, [])
+    get().save()
+  },
 
-  const fundSavings = useCallback((amount, savingsId) => {
-    setBudgetData(prev => {
-      if (!prev) return prev
-      
-      const updated = {
-        ...prev,
+  fundSavings: (amount, savingsId) => {
+    const { budgetData } = get()
+    if (!budgetData) return
+
+    set({
+      budgetData: {
+        ...budgetData,
         savings: {
-          ...prev.savings,
+          ...budgetData.savings,
           [savingsId]: {
-            ...prev.savings[savingsId],
-            funded: prev.savings[savingsId].funded + amount
+            ...budgetData.savings[savingsId],
+            funded: budgetData.savings[savingsId].funded + amount
           }
         }
       }
-      return updated
     })
-  }, [])
+    get().save()
+  },
 
-  const resetBudget = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY)
-    setBudgetData(null)
-  }, [])
+  resetBudget: () => {
+    localStorage.removeItem(APP_CONFIG.storageKeys.budgetData)
+    set({ budgetData: null })
+  },
 
-  const totalSpent = budgetData 
-    ? Object.values(budgetData.categories).reduce((sum, cat) => sum + cat.spent, 0)
-    : 0
+  getTotalSpent: () => {
+    const { budgetData } = get()
+    if (!budgetData) return 0
+    return Object.values(budgetData.categories).reduce((sum, cat) => sum + cat.spent, 0)
+  },
 
-  const totalRemaining = budgetData ? budgetData.income - totalSpent : 0
+  getTotalRemaining: () => {
+    const { budgetData } = get()
+    if (!budgetData) return 0
+    return budgetData.income - get().getTotalSpent()
+  },
 
-  const remainingDays = budgetData ? (() => {
+  getRemainingDays: () => {
+    const { budgetData } = get()
+    if (!budgetData) return 0
     const today = new Date()
     const end = new Date(budgetData.cycleEnd)
     const diff = end - today
     return Math.ceil(diff / (1000 * 60 * 60 * 24))
-  })() : 0
-
-  return {
-    budgetData,
-    initializeBudget,
-    logExpense,
-    fundSavings,
-    resetBudget,
-    totalSpent,
-    totalRemaining,
-    remainingDays
   }
-}
+}))
+
+export default useBudgetStore

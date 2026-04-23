@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'motion/react'
 import { ChevronRight, ChevronLeft, Target, Check, AlertTriangle } from 'lucide-react'
-import { useBudgetStore } from '../store/useBudgetStore'
+import useBudgetStore from '../store/useBudgetStore'
 import { APP_CONFIG } from '../config/app'
 
 const STEPS = [
@@ -36,7 +36,7 @@ export default function OnboardingFlow({ onComplete }) {
       { id: 'lifestyle', name: 'Lifestyle Fund', target: 0 }
     ]
   })
-  const { initializeBudget } = useBudgetStore()
+  const initializeBudget = useBudgetStore(state => state.initializeBudget)
 
   const updateField = (path, value) => {
     setFormData(prev => {

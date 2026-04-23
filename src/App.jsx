@@ -1,17 +1,37 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import OnboardingFlow from './components/OnboardingFlow'
 import Dashboard from './components/Dashboard'
-import { useBudgetStore } from './store/useBudgetStore'
+import useBudgetStore from './store/useBudgetStore'
 import { APP_CONFIG } from './config/app'
 
 export default function App() {
-  const { budgetData } = useBudgetStore()
-  const [showOnboarding, setShowOnboarding] = useState(!budgetData)
+  const budgetData = useBudgetStore(state => state.budgetData)
+  const hydrate = useBudgetStore(state => state.hydrate)
+  const hydrated = useBudgetStore(state => state.hydrated)
+  const [showOnboarding, setShowOnboarding] = useState(false)
+
+  useEffect(() => {
+    hydrate()
+  }, [])
+
+  useEffect(() => {
+    if (hydrated) {
+      setShowOnboarding(!budgetData)
+    }
+  }, [hydrated, budgetData])
+
+  if (!hydrated) {
+    return (
+      <div className="min-h-dvh flex items-center justify-center bg-white">
+        <div className="w-8 h-8 border-[3px] border-black border-t-[#FF6600] animate-spin" />
+      </div>
+    )
+  }
 
   return (
     <AnimatePresence mode="wait">
-      {showOnboarding || !budgetData ? (
+      {showOnboarding ? (
         <motion.div
           key="onboarding"
           initial={{ opacity: 0 }}

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BUDGET DASHBOARD // ZERO-BASED ALLOCATION</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard">
+
+        <header class="global-status-panel">
+            <div class="panel-header">
+                <span class="panel-label">GLOBAL STATUS PANEL</span>
+                <span class="cycle-info">CYCLE: <span id="cycle-start">--</span> → <span id="cycle-end">--</span></span>
+            </div>
+            <div class="status-grid">
+                <div class="status-item">
+                    <span class="status-label">MONTHLY INCOME</span>
+                    <span class="status-value" id="monthly-income">100,000 Kzs</span>
+                </div>
+                <div class="status-item status-item--highlight">
+                    <span class="status-label">TOTAL REMAINING FUNDS</span>
+                    <span class="status-value status-value--large" id="total-remaining">100,000</span>
+                    <span class="status-unit">KZS</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">REMAINING DAYS</span>
+                    <span class="status-value" id="remaining-days">--</span>
+                </div>
+            </div>
+        </header>
+
+        <section class="allocation-vault">
+            <div class="panel-header">
+                <span class="panel-label">ALLOCATION VAULT // BUDGET BREAKDOWN</span>
+            </div>
+            <div class="vault-grid" id="vault-grid"></div>
+        </section>
+
+        <section class="savings-pillars">
+            <div class="panel-header">
+                <span class="panel-label">THE THREE SAVINGS PILLARS // GOAL TRACKER</span>
+            </div>
+            <div class="pillars-grid" id="pillars-grid"></div>
+        </section>
+
+        <section class="transaction-input-module">
+            <div class="panel-header">
+                <span class="panel-label">TRANSACTION INPUT MODULE // ACTION CENTER</span>
+            </div>
+            <div class="input-form">
+                <div class="input-group">
+                    <label for="amount-input">AMOUNT (KZS)</label>
+                    <input type="number" id="amount-input" placeholder="0" min="0" step="100">
+                </div>
+                <div class="input-group">
+                    <label for="category-select">CATEGORY</label>
+                    <select id="category-select">
+                        <option value="tuition">TUITION</option>
+                        <option value="transport">TRANSPORT</option>
+                        <option value="data">DATA</option>
+                        <option value="food">FOOD</option>
+                        <option value="personal">PERSONAL CARE</option>
+                    </select>
+                </div>
+                <button id="log-expense-btn" class="action-btn">LOG EXPENSE</button>
+            </div>
+            <div id="alert-container"></div>
+        </section>
+
+        <section class="daily-log">
+            <div class="panel-header">
+                <span class="panel-label">DAILY LOG // TRANSACTION HISTORY</span>
+            </div>
+            <div class="log-container" id="log-container">
+                <div class="log-empty">NO TRANSACTIONS LOGGED YET</div>
+            </div>
+        </section>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
